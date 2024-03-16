@@ -9,7 +9,7 @@ import (
 // Size represents AWS instance class size, like “medium”, “large”, and so on.
 // Instances of this type should only be created with [S] function.
 // Sizes can be compared agains each other using regular comparison operators,
-// use [As] method to step down from a larger value to some multiple of a smaller
+// use [Size.As] method to step down from a larger value to some multiple of a smaller
 // Size.
 type Size int
 
