@@ -34,7 +34,7 @@ func (src Size) As(dst Size) int {
 func S(s string) Size {
 	v, ok := nameToSize[s[strings.LastIndexByte(s, '.')+1:]]
 	if !ok {
-		panic("unsupported size class")
+		panic("unsupported size class: " + s)
 	}
 	return v
 }
