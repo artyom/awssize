@@ -1,22 +1,30 @@
-// Package awssize provides a way to convert between AWS instance sizes,
-// in a way that is mostly meaningful in the context of billing and reserved instances.
+// Package awssize provides utilities for comparing and converting between
+// different AWS EC2 instance sizes within the same family. It allows representing
+// sizes like "large", "xlarge", etc. as values that can be easily compared and
+// used to calculate size differences.
 package awssize
 
 import (
 	"strings"
 )
 
-// Size represents AWS instance class size, like “medium”, “large”, and so on.
-// Instances of this type should only be created with [S] function.
-// Sizes can be compared agains each other using regular comparison operators,
-// use [Size.As] method to step down from a larger value to some multiple of a smaller
-// Size.
+// Size represents an AWS EC2 instance size like "medium", "large", "xlarge", etc.
+// Size values can be compared using regular comparison operators.
+// Use the [S] function to create Size values from either full instance classes
+// like "r5.large" or just the size suffix like "large".
+// The zero value is not a valid Size.
 type Size int
 
-// As returns the multiplier you need to apply to dst to get one src.
-// It panics if src is smaller than dst, or if src cannot be expressed
-// as non-fractional multiple of dst. It is recommended to use the
-// smallest instance size within the family as dst.
+// As returns the multiplier needed to convert from the source Size to the
+// destination Size dst. For example:
+//
+//	xlarge := S("xlarge")
+//	large := S("large")
+//	fmt.Println(xlarge.As(large)) // Prints 2
+//
+// As panics if the source Size is smaller than dst, or if it cannot be expressed
+// as a whole multiple of dst. For best results, use the smallest size in the
+// instance family as the destination, e.g. S("large").
 func (src Size) As(dst Size) int {
 	if src < dst {
 		panic("size is smaller than target")
@@ -27,10 +35,10 @@ func (src Size) As(dst Size) int {
 	return int(src / dst)
 }
 
-// S takes either an instance class, like “db.r6g.large”, “r5.large”,
-// or a size suffix, like “large”, “medium”, etc., and returns the Size
-// that can be used to calculate the difference between classes of
-// the same family.
+// S parses an instance size string and returns the corresponding Size value.
+// s can be either a full instance class like "db.r6g.large", "r5.large", etc.
+// or just the size suffix like "large", "xlarge", "2xlarge", etc.
+// It panics if the input string does not contain a valid size suffix.
 func S(s string) Size {
 	v, ok := nameToSize[s[strings.LastIndexByte(s, '.')+1:]]
 	if !ok {
